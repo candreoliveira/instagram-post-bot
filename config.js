@@ -1,8 +1,4 @@
 module.exports = {
-   INSTA_USER: "USERNAME",
-   INSTA_PW: "PASSWORD",
-   SPREAD_ID: "GOOGLESPREADID",
-   POST_INTERVAL: "*/5 * * * *",
-   ADD_TO_CAPTION: '\r\r_____________________\r\r#Hashtag #my #ass',
-   HEROKU_URL: 'http://< my-app> .herokuapp.com'
+  ADD_TO_CAPTION:
+    "\r\r#mae #gravidez #maecoruja #maedemenino #maedemenina #familia #filhos #baby #babygirl #babyboy #babylove #babyfashion #babybump #babystyle #babymodel #babys #babyshop #wisekit #bewise #love #maedeprimeiraviagem"
 };

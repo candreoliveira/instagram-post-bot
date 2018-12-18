@@ -1,6 +1,4 @@
 images/*
 !images/.gitkeep
-
-credentials/*
-!credentials/.gitkeep
 node_modules/
+credentials
