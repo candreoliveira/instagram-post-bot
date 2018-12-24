@@ -2,9 +2,11 @@ var express = require("express");
 var app = express();
 var http = require("http");
 var schedule = require("node-schedule");
+require("dotenv").config();
 
 var postToInstagram = require("./methods/postToInstagram.js");
 var config = require("./config.js");
+var sheetName = process.env.SHEET_NAME || config.SHEET_NAME;
 var j; // ????
 
 app.set("port", process.env.PORT || 5000);
@@ -15,7 +17,7 @@ app.get("/", function(request, response) {
 });
 
 app.get("/api/post-now", function(request, response) {
-  postToInstagram(j, config.SHEET_NAME).then(function(res) {
+  postToInstagram(j, sheetName).then(function(res) {
     response.send(res);
   });
 });
@@ -28,9 +30,8 @@ app.listen(app.get("port"), function() {
   console.log("Node app is running on port", app.get("port"));
 
   var postInterval = process.env.POST_INTERVAL || config.POST_INTERVAL;
-
   j = schedule.scheduleJob(postInterval, function() {
-    postToInstagram(j, config.SHEET_NAME);
+    postToInstagram(j, sheetName);
   });
 
   console.log("First post will be done at: " + j.nextInvocation());

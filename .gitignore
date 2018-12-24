@@ -2,3 +2,4 @@ images/*
 !images/.gitkeep
 node_modules/
 credentials
+.env

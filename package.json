@@ -18,5 +18,8 @@
     "instagram-private-api": "^0.6.7",
     "node-schedule": "^1.2.5",
     "q": "^1.5.1"
+  },
+  "devDependencies": {
+    "dotenv": "^6.2.0"
   }
 }
