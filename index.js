@@ -39,5 +39,5 @@ app.listen(app.get("port"), function() {
   setInterval(function() {
     console.log("Keep Alive!");
     http.get(config.HEROKU_URL);
-  }, 3600000); // every hour
+  }, 300000); // every 5 min
 });
