@@ -17,15 +17,9 @@ app.get("/", function(request, response) {
 });
 
 app.get("/api/post-now", function(request, response) {
-  postToInstagram(j, sheetName).then(
-    function(res) {
-      response.send(res);
-    },
-    function(e) {
-      console.log("Retrying to post... new GET on /api/post-now. Error: " + e);
-      http.get("/api/next-post");
-    }
-  );
+  postToInstagram(j, sheetName).then(function(res) {
+    response.send(res);
+  });
 });
 
 app.get("/api/next-post", function(request, response) {
