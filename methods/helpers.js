@@ -98,6 +98,9 @@ var helpers = {
       h = w;
     }
 
+    console.log("Sharping default ratio: ", ratio);
+    console.log("Sharping to: ", w, "x", h);
+
     sharp(img_dir + file)
       .resize(parseInt(w), parseInt(h))
       .toFile(img_dir + output, function(error, info) {
