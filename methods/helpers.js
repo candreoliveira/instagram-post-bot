@@ -54,6 +54,7 @@ var helpers = {
   },
 
   sharpPicture: function(file, output) {
+    var maxSize = 800;
     var deferred = q.defer();
     var img = img_dir + file;
     var dimensions = sizeOf(img);
@@ -73,8 +74,8 @@ var helpers = {
     ) {
       // Transform to portrait
 
-      if (dimensions.height >= 1080) {
-        h = 1080;
+      if (dimensions.height >= maxSize) {
+        h = maxSize;
       }
 
       w = h * allowedRatio.portrait;
@@ -84,15 +85,15 @@ var helpers = {
     ) {
       // Transform to landscape
 
-      if (dimensions.width >= 1080) {
-        w = 1080;
+      if (dimensions.width >= maxSize) {
+        w = maxSize;
       }
 
       h = w / allowedRatio.landscape;
     } else {
       // Transform to square
-      if (dimensions.width >= 1080) {
-        w = 1080;
+      if (dimensions.width >= maxSize) {
+        w = maxSize;
       }
 
       h = w;
