@@ -29,7 +29,9 @@ app.get("/api/next-post", function(request, response) {
 app.listen(app.get("port"), function() {
   console.log("Node app is running on port", app.get("port"));
 
+  var url = process.env.HEROKU_URL || config.HEROKU_URL;
   var postInterval = process.env.POST_INTERVAL || config.POST_INTERVAL;
+
   j = schedule.scheduleJob(postInterval, function() {
     postToInstagram(j, sheetName);
   });
@@ -38,6 +40,7 @@ app.listen(app.get("port"), function() {
 
   setInterval(function() {
     console.log("Keep Alive!");
-    http.get(config.HEROKU_URL);
+
+    http.get(url);
   }, 300000); // every 5 min
 });
