@@ -31,11 +31,37 @@ app.listen(app.get("port"), function() {
 
   var url = process.env.HEROKU_URL || config.HEROKU_URL;
   var postInterval = process.env.POST_INTERVAL || config.POST_INTERVAL;
+  var today = new Date();
+  var dd = today.getDate();
+  var mm = today.getMonth() + 1; //January is 0!
+  var yyyy = today.getFullYear();
+
+  if (dd < 10) {
+    dd = "0" + dd;
+  }
+
+  if (mm < 10) {
+    mm = "0" + mm;
+  }
+
+  today =
+    mm +
+    "/" +
+    dd +
+    "/" +
+    yyyy +
+    " @ " +
+    today.getHours() +
+    ":" +
+    today.getMinutes() +
+    ":" +
+    today.getSeconds();
 
   j = schedule.scheduleJob(postInterval, function() {
     postToInstagram(j, sheetName);
   });
 
+  console.log("Current datetime is: " + today);
   console.log("First post will be done at: " + j.nextInvocation());
 
   setInterval(function() {
