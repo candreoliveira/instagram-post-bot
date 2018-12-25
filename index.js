@@ -22,11 +22,8 @@ app.get("/api/post-now", function(request, response) {
       response.send(res);
     },
     function(e) {
-      console.log(
-        "Retrying to post... new GET on /api/post-now. Error: " + e.message
-      );
-
-      http.get("/api/post-now");
+      console.log("Retrying to post... new GET on /api/post-now. Error: " + e);
+      http.get("/api/next-post");
     }
   );
 });

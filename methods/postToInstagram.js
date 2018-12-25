@@ -19,31 +19,48 @@ module.exports = function(j, sheetName) {
       console.log("POST: ", post);
 
       // download picture file from url
-      helpers.downloadPicture(post.URL, post.image_name).then(function() {
-        console.log("got picture");
-        // post image to instagram
-        instagramAPI(post, addToCaption).then(
-          function(res) {
-            console.log("SUCCESS INSTAGRAM");
-            // update posted status in spreadsheet to true
-            googleAPI
-              .updatePostStatusOfRow(post.rowIndex, sheetName)
-              .then(function() {
-                helpers.deletePicture(post.image_name);
+      helpers
+        .downloadPicture(post.URL, post.image_name)
+        .then(
+          function() {
+            console.log("Got picture.");
+            // post image to instagram
+            instagramAPI(post, addToCaption)
+              .then(
+                function(res) {
+                  console.log("Instagram success.");
+                  // update posted status in spreadsheet to true
+                  googleAPI
+                    .updatePostStatusOfRow(post.rowIndex, sheetName)
+                    .then(function() {
+                      helpers.deletePicture(post.image_name);
 
-                console.log(
-                  "Post successfully posted. Next post will be done at: " +
-                    j.nextInvocation()
-                );
-                deferred.resolve(j.nextInvocation());
+                      console.log(
+                        "Post successfully posted. Next post will be done at: " +
+                          j.nextInvocation()
+                      );
+                      deferred.resolve(j.nextInvocation());
+                    });
+                },
+                function(e) {
+                  console.log("ERROR1: Posting on instagram: " + e.message);
+                  deferred.reject(e);
+                }
+              )
+              .catch(function(e) {
+                console.log("ERROR2: Posting on instagram: " + e.message);
+                deferred.reject(e);
               });
           },
           function(e) {
-            console.log("ERROR: Posting on instagram: " + e.message);
+            console.log("ERROR1 downloading", e);
             deferred.reject(e);
           }
-        );
-      });
+        )
+        .catch(function(e) {
+          console.log("ERROR2 downloading", e);
+          deferred.reject(e);
+        });
     } else {
       console.log("WARNING: no more posts in spreadsheet");
       deferred.reject("WARNING: no more posts in spreadsheet");
