@@ -17,9 +17,14 @@ app.get("/", function(request, response) {
 });
 
 app.get("/api/post-now", function(request, response) {
-  postToInstagram(j, sheetName).then(function(res) {
-    response.send(res);
-  });
+  postToInstagram(j, sheetName)
+    .then(function(res) {
+      response.send(res);
+    })
+    .catch(function(e) {
+      console.log("Retrying to post... new GET on /api/post-now.");
+      http.get("/api/post-now");
+    });
 });
 
 app.get("/api/next-post", function(request, response) {

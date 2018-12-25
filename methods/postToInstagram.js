@@ -22,21 +22,26 @@ module.exports = function(j, sheetName) {
       helpers.downloadPicture(post.URL, post.image_name).then(function() {
         console.log("got picture");
         // post image to instagram
-        instagramAPI(post, addToCaption).then(function(res) {
-          console.log("SUCCESS INSTAGRAM");
-          // update posted status in spreadsheet to true
-          googleAPI
-            .updatePostStatusOfRow(post.rowIndex, sheetName)
-            .then(function() {
-              helpers.deletePicture(post.image_name);
+        instagramAPI(post, addToCaption)
+          .then(function(res) {
+            console.log("SUCCESS INSTAGRAM");
+            // update posted status in spreadsheet to true
+            googleAPI
+              .updatePostStatusOfRow(post.rowIndex, sheetName)
+              .then(function() {
+                helpers.deletePicture(post.image_name);
 
-              console.log(
-                "Post successfully posted. Next post will be done at: " +
-                  j.nextInvocation()
-              );
-              deferred.resolve(j.nextInvocation());
-            });
-        });
+                console.log(
+                  "Post successfully posted. Next post will be done at: " +
+                    j.nextInvocation()
+                );
+                deferred.resolve(j.nextInvocation());
+              });
+          })
+          .catch(function(e) {
+            console.log("ERROR: Posting on instagram: " + e.message);
+            deferred.reject(e);
+          });
       });
     } else {
       console.log("WARNING: no more posts in spreadsheet");
