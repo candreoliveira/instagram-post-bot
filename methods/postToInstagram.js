@@ -22,8 +22,8 @@ module.exports = function(j, sheetName) {
       helpers.downloadPicture(post.URL, post.image_name).then(function() {
         console.log("got picture");
         // post image to instagram
-        instagramAPI(post, addToCaption)
-          .then(function(res) {
+        instagramAPI(post, addToCaption).then(
+          function(res) {
             console.log("SUCCESS INSTAGRAM");
             // update posted status in spreadsheet to true
             googleAPI
@@ -37,11 +37,12 @@ module.exports = function(j, sheetName) {
                 );
                 deferred.resolve(j.nextInvocation());
               });
-          })
-          .catch(function(e) {
+          },
+          function(e) {
             console.log("ERROR: Posting on instagram: " + e.message);
             deferred.reject(e);
-          });
+          }
+        );
       });
     } else {
       console.log("WARNING: no more posts in spreadsheet");

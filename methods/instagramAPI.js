@@ -36,7 +36,6 @@ module.exports = function(post, addToCaption) {
     .then(function(medium) {
       // we configure medium, it is now visible with caption
       console.log(medium.params);
-
       deferred.resolve(medium.params);
     });
 
