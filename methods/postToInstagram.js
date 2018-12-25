@@ -24,31 +24,45 @@ module.exports = function(j, sheetName) {
         .then(
           function() {
             console.log("Got picture.");
-            // post image to instagram
-            instagramAPI(post, addToCaption)
+            helpers
+              .sharpPicture(post.image_name)
               .then(
-                function(res) {
-                  console.log("Instagram success.");
-                  // update posted status in spreadsheet to true
-                  googleAPI
-                    .updatePostStatusOfRow(post.rowIndex, sheetName)
-                    .then(function() {
-                      helpers.deletePicture(post.image_name);
+                function() {
+                  // post image to instagram
+                  instagramAPI(post, addToCaption)
+                    .then(
+                      function(res) {
+                        console.log("Instagram success.");
+                        // update posted status in spreadsheet to true
+                        googleAPI
+                          .updatePostStatusOfRow(post.rowIndex, sheetName)
+                          .then(function() {
+                            helpers.deletePicture(post.image_name);
 
-                      console.log(
-                        "Post successfully posted. Next post will be done at: " +
-                          j.nextInvocation()
-                      );
-                      deferred.resolve(j.nextInvocation());
+                            console.log(
+                              "Post successfully posted. Next post will be done at: " +
+                                j.nextInvocation()
+                            );
+                            deferred.resolve(j.nextInvocation());
+                          });
+                      },
+                      function(e) {
+                        console.log("ERROR1: Posting on instagram: ", e);
+                        deferred.reject(e);
+                      }
+                    )
+                    .catch(function(e) {
+                      console.log("ERROR2: Posting on instagram: ", e);
+                      deferred.reject(e);
                     });
                 },
                 function(e) {
-                  console.log("ERROR1: Posting on instagram: " + e.message);
+                  console.log("ERROR1 sharping", e);
                   deferred.reject(e);
                 }
               )
               .catch(function(e) {
-                console.log("ERROR2: Posting on instagram: " + e.message);
+                console.log("ERROR2 sharping", e);
                 deferred.reject(e);
               });
           },

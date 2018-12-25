@@ -2,6 +2,8 @@ var http = require("https");
 var fs = require("fs");
 var q = require("q");
 var download = require("download-file");
+var sharp = require("sharp");
+var sizeOf = require("image-size");
 
 var path = require("path");
 var img_dir = path.join(path.dirname(require.main.filename), "images/");
@@ -40,11 +42,75 @@ var helpers = {
 
       deferred.resolve();
     });
+
     return deferred.promise;
   },
 
   deletePicture: function(file) {
-    fs.unlink(img_dir + file);
+    fs.unlink(img_dir + file, err => {
+      if (err) console.log(err);
+      console.log(file + " was deleted");
+    });
+  },
+
+  sharpPicture: function(file, output) {
+    var deferred = q.defer();
+    var img = img_dir + file;
+    var dimensions = sizeOf(img);
+    var ratio = dimensions.width / dimensions.height;
+    var allowedRatio = {
+      landscape: 1.91,
+      square: 1,
+      portrait: 0.8
+    };
+
+    var w = dimensions.width;
+    var h = dimensions.height;
+
+    if (
+      ratio <=
+      allowedRatio.portrait + (allowedRatio.square - allowedRatio.portrait) / 2
+    ) {
+      // Transform to portrait
+
+      if (dimensions.height >= 1080) {
+        h = 1080;
+      }
+
+      w = h * allowedRatio.portrait;
+    } else if (
+      ratio >=
+      allowedRatio.square + (allowedRatio.landscape - allowedRatio.square) / 2
+    ) {
+      // Transform to landscape
+
+      if (dimensions.width >= 1080) {
+        w = 1080;
+      }
+
+      h = w / allowedRatio.landscape;
+    } else {
+      // Transform to square
+      if (dimensions.width >= 1080) {
+        w = 1080;
+      }
+
+      h = w;
+    }
+
+    sharp(img_dir + file)
+      .resize(parseInt(w), parseInt(h))
+      .toFile(img_dir + output, function(error, info) {
+        if (error) {
+          return deferred.reject(error);
+          console.log("ERROR Sharping", error);
+        }
+
+        console.log("Sharp output generated.");
+        return deferred.resolve(img_dir + output);
+      });
+
+    return deferred.promise;
   }
 };
 
