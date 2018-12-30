@@ -15,7 +15,7 @@ var helpers = {
     if (item.Use === "TRUE" && item.Used === "FALSE") {
       return item;
     } else if (count === posts.length) {
-      console.log("WARNING: All posts posted!");
+      console.log("[WARNING] All posts posted!");
       return null;
     } else {
       count++;
@@ -36,21 +36,18 @@ var helpers = {
 
     download(url, options, function(err) {
       if (err) {
-        console.log(err);
+        console.log(`[ERROR] Download error ${err}.`);
         deferred.reject(err);
       }
 
-      deferred.resolve();
+      deferred.resolve(url);
     });
 
     return deferred.promise;
   },
 
   deletePicture: function(file) {
-    fs.unlink(img_dir + file, err => {
-      if (err) console.log(err);
-      console.log(file + " was deleted");
-    });
+    return fs.unlinkSync(img_dir + file);
   },
 
   sharpPicture: function(file, output) {
@@ -99,18 +96,18 @@ var helpers = {
       h = w;
     }
 
-    console.log("Sharping default ratio: ", ratio);
-    console.log("Sharping to: ", w, "x", h);
+    console.log("[INFO] Sharping default ratio: ", ratio);
+    console.log("[INFO] Sharping to: ", w, "x", h);
 
     sharp(img_dir + file)
       .resize(parseInt(w), parseInt(h))
       .toFile(img_dir + output, function(error, info) {
         if (error) {
           return deferred.reject(error);
-          console.log("ERROR Sharping", error);
+          console.log(`[ERROR] Sharping error ${error}.`);
         }
 
-        console.log("Sharp output generated.");
+        console.log("[INFO] Sharp output generated.");
         return deferred.resolve(img_dir + output);
       });
 

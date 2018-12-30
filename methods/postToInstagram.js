@@ -1,85 +1,92 @@
-var googleAPI = require("./googleSpreadAPI.js");
-var instagramAPI = require("./instagramAPI.js");
-var helpers = require("./helpers.js");
-var q = require("q");
+const q = require("q"),
+      googleAPI = require("./googleSpreadAPI.js"),
+      instagramAPI = require("./instagramAPI.js"),
+      helpers = require("./helpers.js"),
+      config = require("../config.js");
 
-var config = require("../config.js");
+var postToInstagram = function(j, sheetName, count = 0) {
+  const addToCaption = process.env.ADD_TO_CAPTION || config.ADD_TO_CAPTION,
+        retry = process.env.RETRY || config.RETRY || 3,
+        deferred = q.defer(),
+        posts;
+  let response;
 
-module.exports = function(j, sheetName) {
-  var deferred = q.defer();
-
-  var addToCaption = config.ADD_TO_CAPTION;
+  if (count > retry) {
+    return deferred.reject("[ERROR] Retry error posting on instagram.");
+  }
 
   // Get all posts from the spreadsheets
-  googleAPI.getPostsFromTable(sheetName).then(function(posts) {
-    // find one random post we can use will be null if none left
-    var post = helpers.getPost(posts, 0);
+  try {
+    posts = await googleAPI.getPostsFromTable(sheetName);
+    console.log(`[INFO] Got ${count} posts from table.`);
+  } catch (error) {
+    console.log(`[ERROR] Error ${count} getting posts from table. Error: ${error}`);
+    return postToInsta(j, sheetName, ++count);
+  }
 
-    if (post) {
-      console.log("POST: ", post);
-
-      // download picture file from url
-      helpers
-        .downloadPicture(post.URL, post.image_name)
-        .then(
-          function() {
-            console.log("Got picture.");
-            helpers
-              .sharpPicture(post.image_name)
-              .then(
-                function() {
-                  // post image to instagram
-                  instagramAPI(post, addToCaption)
-                    .then(
-                      function(res) {
-                        console.log("Instagram success.");
-                        // update posted status in spreadsheet to true
-                        googleAPI
-                          .updatePostStatusOfRow(post.rowIndex, sheetName)
-                          .then(function() {
-                            helpers.deletePicture(post.image_name);
-
-                            console.log(
-                              "Post successfully posted. Next post will be done at: " +
-                                j.nextInvocation()
-                            );
-                            deferred.resolve(j.nextInvocation());
-                          });
-                      },
-                      function(e) {
-                        console.log("ERROR1: Posting on instagram: ", e);
-                        deferred.reject(e);
-                      }
-                    )
-                    .catch(function(e) {
-                      console.log("ERROR2: Posting on instagram: ", e);
-                      deferred.reject(e);
-                    });
-                },
-                function(e) {
-                  console.log("ERROR1 sharping", e);
-                  deferred.reject(e);
-                }
-              )
-              .catch(function(e) {
-                console.log("ERROR2 sharping", e);
-                deferred.reject(e);
-              });
-          },
-          function(e) {
-            console.log("ERROR1 downloading", e);
-            deferred.reject(e);
-          }
-        )
-        .catch(function(e) {
-          console.log("ERROR2 downloading", e);
-          deferred.reject(e);
-        });
-    } else {
-      console.log("WARNING: no more posts in spreadsheet");
-      deferred.reject("WARNING: no more posts in spreadsheet");
+  // find one random post we can use will be null if none left
+  var post = helpers.getPost(posts, 0);
+  if (post) {
+    try {
+      response = await helpers.downloadPicture(post.URL, post.image_name);
+      console.log(`[iNFO] Got ${count} pic ${response}.`);
+    } catch (error) {
+      console.log(`[ERROR] Error ${count} downloading pic. Error: ${error}`);
+      return postToInsta(j, sheetName, ++count);
     }
-  });
 
+    try {
+      response = await helpers.sharpPicture(post.image_name);
+      console.log(`[INFO] Got ${count} sharped pic ${response}.`);
+    } catch (error) {
+      console.log(`[ERROR] Error ${count} sharping pic. Error: ${error}`);
+      return postToInsta(j, sheetName, ++count);
+    }
+
+    try {
+      response = await instagramAPI(post, addToCaption);
+      console.log(`[INFO] Posted ${count} on IG ${response}.`);
+    } catch (error) {
+      console.log(`[ERROR] Error ${count} posting on IG. Error: ${error}.`);
+      return postToInsta(j, sheetName, ++count);
+    }
+
+    let updated = false;
+    while(!updated) {
+      try {
+        response = await googleAPI.updatePostStatusOfRow(post.rowIndex, sheetName);
+        console.log(`[INFO] Updated ${count} sheet ${response}.`);
+        updated = true;
+        break;
+      } catch (error) {
+        console.log(`[ERROR] Error ${count} updating sheet. Error: ${error}.`);
+        setTimeout(() => {
+          console.log(`[INFO] Sleeping to retry update sheet row ${post.rowIndex}.`);
+        }, 1000);
+      }
+    }
+
+    updated = false;
+    while(!updated) {
+      try {
+        response = helpers.deletePicture(post.image_name);
+        console.log(`[INFO] Deleted ${count} pic ${response}.`);
+        updated = true;
+        break;
+      } catch (error) {
+        console.log(`[ERROR] Error ${count} deleting pic. Error: ${error}.`);
+        setTimeout(() => {
+          console.log(`[INFO] Sleeping to retry delete photo ${post.image_name}.`);
+        }, 1000);
+      }
+    }
+
+    console.log("Post successfully posted. Next post will be done at: " + j.nextInvocation());
+    deferred.resolve(j.nextInvocation());
+  } else {
+    // no more posts
+  }
   return deferred.promise;
 };
+
+module.exports = postToInstagram;
