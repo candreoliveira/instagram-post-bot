@@ -7,9 +7,8 @@ const q = require("q"),
 var postToInstagram = function(j, sheetName, count = 0) {
   const addToCaption = process.env.ADD_TO_CAPTION || config.ADD_TO_CAPTION,
         retry = process.env.RETRY || config.RETRY || 3,
-        deferred = q.defer(),
-        posts;
-  let response;
+        deferred = q.defer();
+  let posts, response;
 
   if (count > retry) {
     return deferred.reject("[ERROR] Retry error posting on instagram.");
