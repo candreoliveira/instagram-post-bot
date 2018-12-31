@@ -1,43 +1,56 @@
-var q = require("q");
-var Client = require("instagram-private-api").V1;
-var device = new Client.Device("ledersattel");
-var storage = new Client.CookieFileStorage("./credentials/instauser.json");
-var config = require("../config");
+const q = require("q"),
+  Client = require("instagram-private-api").V1,
+  device = new Client.Device("ledersattel"),
+  storage = new Client.CookieFileStorage("./credentials/instauser.json"),
+  config = require("../config"),
+  path = require("path"),
+  img_dir = path.join(process.cwd(), "images/");
 
-var path = require("path");
-var img_dir = path.join(process.cwd(), "images/");
-
-module.exports = function(post, addToCaption) {
-  var deferred = q.defer();
-  var session;
-
-  var user = process.env.INSTA_USER || config.INSTA_USER;
-  var password = process.env.INSTA_PW || config.INSTA_PW;
+module.exports = async (post, addToCaption, width, height) => {
+  let session, upload, media;
+  const deferred = q.defer(),
+    user = process.env.INSTA_USER || config.INSTA_USER,
+    password = process.env.INSTA_PW || config.INSTA_PW;
 
   // post to instagram
-  Client.Session.create(device, storage, user, password)
-    .then(function(thisSession) {
-      session = thisSession;
-      // Now you have a session, upload image
-      return Client.Upload.photo(session, img_dir + post.image_name);
-    })
-    .then(function(upload) {
-      // upload instanceof Client.Upload
-      // nothing more than just keeping upload id
-      console.log(upload.params.uploadId);
+  try {
+    session = await Client.Session.create(device, storage, user, password);
+  } catch (error) {
+    console.log(`[ERROR] Creating session on instagram. Error: ${error}`);
+    deferred.reject(error);
+  }
 
-      // set caption to photo
-      return Client.Media.configurePhoto(
-        session,
-        upload.params.uploadId,
-        post.Caption + addToCaption
-      );
-    })
-    .then(function(medium) {
-      // we configure medium, it is now visible with caption
-      console.log(medium.params);
-      deferred.resolve(medium.params);
-    });
+  try {
+    upload = await Client.Upload.photo(session, img_dir + post.image_name);
+  } catch (error) {
+    console.log(`[ERROR] Uploading media on instagram. Error: ${error}`);
+    deferred.reject(error);
+  }
+
+  try {
+    media = await Client.Media.configurePhoto(
+      session,
+      upload.params.uploadId,
+      post.Caption + addToCaption,
+      width,
+      height,
+      post.tags
+    );
+
+    console.log(`[INFO] Configured media on instagram.`);
+
+    deferred.resolve(media.params);
+  } catch (error) {
+    console.log(`[ERROR] Configuring media on instagram. Error: ${error}`);
+    // deferred.reject(error);
+    try {
+      await Client.Media.delete(session, upload.params.uploadId);
+      deferred.reject(error);
+    } catch (e) {
+      console.log(`[ERROR] Deleting media on instagram. Error: ${e}`);
+      deferred.reject(error);
+    }
+  }
 
   return deferred.promise;
 };

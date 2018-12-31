@@ -61,11 +61,11 @@ app.listen(app.get("port"), function() {
     postToInstagram(j, sheetName);
   });
 
-  console.log("Current datetime is: " + today);
-  console.log("First post will be done at: " + j.nextInvocation());
+  console.log("[INFO] Current datetime is: " + today);
+  console.log("[INFO] First post will be done at: " + j.nextInvocation());
 
   setInterval(function() {
-    console.log("Keep Alive!");
+    console.log("[INFO] Keep Alive!");
 
     http.get(url);
   }, 300000); // every 5 min

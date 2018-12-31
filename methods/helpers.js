@@ -10,17 +10,17 @@ var img_dir = path.join(path.dirname(require.main.filename), "images/");
 
 var helpers = {
   getPost: function(posts, count) {
-    var item = posts[Math.floor(Math.random() * posts.length)];
-
-    if (item.Use === "TRUE" && item.Used === "FALSE") {
-      return item;
-    } else if (count === posts.length) {
+    if (count === posts.length) {
       console.log("[WARNING] All posts posted!");
       return null;
-    } else {
-      count++;
-      getPost(posts, count);
     }
+
+    var item = posts[Math.floor(Math.random() * posts.length)];
+    if (item.Use === "TRUE" && item.Used === "FALSE") {
+      return item;
+    }
+
+    return this.getPost(posts, ++count);
   },
 
   downloadPicture: function(url, path) {
@@ -50,11 +50,13 @@ var helpers = {
     return fs.unlinkSync(img_dir + file);
   },
 
-  sharpPicture: function(file, output) {
+  sizeOf: function(file) {
+    return sizeOf(img_dir + file);
+  },
+
+  sharpPicture: function(file, dimensions, output) {
     var maxSize = 800;
     var deferred = q.defer();
-    var img = img_dir + file;
-    var dimensions = sizeOf(img);
     var ratio = dimensions.width / dimensions.height;
     var allowedRatio = {
       landscape: 1.91,

@@ -1,5 +1,5 @@
 module.exports = {
   RETRY: 5,
   ADD_TO_CAPTION:
-    "\r.\r#bebe, #baby, #maedemenina, #maternidade, #maedemenino, #love, #amor, #gestante, #babygirl, #gravida, #fotografia, #instababy, #brasil, #mamae, #maedeprimeiraviagem, #familia, #menino, #kids, #gravidez, #babyboy, #mundorosa, #maternidadereal, #menina, #moda, #newborn, #fashion, #photography, #modainfantil, #recemnascido, #mundoazul #sabedoria #dicas #mamaes #funkid"
+    "\r\r\n.\n.\nE aí curtiu? Então nos segue para saber tudo sobre o mundo dos bebês! 😉 ☝\r\r\n.\n.\n#bebe #maedemenina #maternidade #maedemenino #gestante #gravida #mamae #maedeprimeiraviagem #menino #gravidez #mundorosa #maternidadereal #menina #newborn #recemnascido #mundoazul"
 };

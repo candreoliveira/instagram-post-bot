@@ -11,7 +11,6 @@ var config = require("../config.js");
 // at ~/.credentials/sheets.googleapis.com-nodejs-quickstart.json
 var SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
 var TOKEN_DIR = appDir + "/credentials/";
-console.log(TOKEN_DIR);
 var TOKEN_PATH = TOKEN_DIR + "sheets.googleapis.com-nodejs-quickstart.json";
 
 var googleFunctions = {
@@ -202,7 +201,7 @@ var googleFunctions = {
         }
 
         // TODO: Change code below to process the `response` object:
-        console.log(JSON.stringify(response, null, 2));
+        console.log("Sheet updated on ", response.updatedRange);
         deferred.resolve(response);
       }
     );
